@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	config "github.com/RethikRaj/AIRBNB/API_GATEWAY/config/env"
-	"github.com/go-chi/chi/v5"
+	"github.com/RethikRaj/AIRBNB/API_GATEWAY/router"
 )
 
 type Config struct {
@@ -32,12 +32,12 @@ func NewApplication(config *Config) *Application {
 
 func (app *Application) Run() error {
 	// Setup Router
-	r := chi.NewRouter()
+	router := router.SetupRouter()
 
 	// Setup server
 	server := http.Server{
 		Addr:    app.Config.Addr,
-		Handler: r,
+		Handler: router,
 	}
 
 	fmt.Println("Starting Server on", app.Config.Addr)
