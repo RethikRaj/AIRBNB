@@ -45,7 +45,8 @@ func (app *Application) Run() error {
 	userHandler := handlers.NewUserHandler(userService)
 
 	// Setup Router
-	router := router.SetupRouter(userHandler)
+	userRouter := router.NewUserRouter(userHandler)
+	router := router.SetupRouter(userRouter)
 
 	// Setup server
 	server := http.Server{

@@ -3,11 +3,14 @@ package router
 import (
 	"net/http"
 
-	"github.com/RethikRaj/AIRBNB/API_GATEWAY/handlers"
 	"github.com/go-chi/chi/v5"
 )
 
-func SetupRouter(userHandler *handlers.UserHandler) *chi.Mux {
+type Router interface {
+	RegisterRoutes(r chi.Router)
+}
+
+func SetupRouter(userRouter Router) *chi.Mux {
 
 	chiRouter := chi.NewRouter()
 
@@ -16,7 +19,7 @@ func SetupRouter(userHandler *handlers.UserHandler) *chi.Mux {
 		w.Write([]byte("Pong"))
 	})
 
-	chiRouter.Post("/signup", userHandler.CreateUser)
+	userRouter.RegisterRoutes(chiRouter)
 
 	return chiRouter
 }
