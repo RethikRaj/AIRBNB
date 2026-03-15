@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	config "github.com/RethikRaj/AIRBNB/API_GATEWAY/config/env"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -15,9 +16,11 @@ type Application struct {
 	Config *Config
 }
 
-func NewConfig(addr string) *Config {
+func NewConfig() *Config {
+	port := config.GetStringValue("PORT", ":8081")
+
 	return &Config{
-		Addr: addr,
+		Addr: port,
 	}
 }
 
