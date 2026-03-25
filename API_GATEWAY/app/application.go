@@ -4,30 +4,18 @@ import (
 	"fmt"
 	"net/http"
 
-	config "github.com/RethikRaj/AIRBNB/API_GATEWAY/config/env"
+	"github.com/RethikRaj/AIRBNB/API_GATEWAY/config"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/handlers"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/repositories"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/router"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/services"
 )
 
-type Config struct {
-	Addr string
-}
-
 type Application struct {
-	Config *Config
+	Config *config.Config
 }
 
-func NewConfig() *Config {
-	port := config.GetStringValue("PORT", ":8081")
-
-	return &Config{
-		Addr: port,
-	}
-}
-
-func NewApplication(config *Config) *Application {
+func NewApplication(config *config.Config) *Application {
 	return &Application{
 		Config: config,
 	}
@@ -50,11 +38,11 @@ func (app *Application) Run() error {
 
 	// Setup server
 	server := http.Server{
-		Addr:    app.Config.Addr,
+		Addr:    app.Config.HTTP.Addr,
 		Handler: router,
 	}
 
-	fmt.Println("Starting Server on", app.Config.Addr)
+	fmt.Println("Starting Server on", app.Config.HTTP.Addr)
 
 	return server.ListenAndServe()
 }

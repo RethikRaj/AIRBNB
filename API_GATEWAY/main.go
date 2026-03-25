@@ -2,19 +2,18 @@ package main
 
 import (
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/app"
-	config "github.com/RethikRaj/AIRBNB/API_GATEWAY/config/env"
-	"github.com/joho/godotenv"
+	"github.com/RethikRaj/AIRBNB/API_GATEWAY/config"
+	envConfig "github.com/RethikRaj/AIRBNB/API_GATEWAY/config/env"
 )
 
 func main() {
 	// load environment variables
-	config.LoadEnv()
+	envConfig.LoadEnv()
 
-	cfg := app.NewConfig()
+	cfg := config.NewConfig()
 
 	app := app.NewApplication(cfg)
 
 	app.Run()
 
-	godotenv.Load()
 }
