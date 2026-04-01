@@ -1,13 +1,18 @@
 package repositories
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
+	"github.com/RethikRaj/AIRBNB/API_GATEWAY/models"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type UserRepository interface {
-	CreateUser() error
+	CreateUser(name string, email string, password_hash string) error
+	GetUserByID(id int) (*models.User, error)
 }
 
 type userRepository struct {
@@ -27,7 +32,47 @@ func NewUserRepository(_pool *pgxpool.Pool) UserRepository {
 	}
 }
 
-func (ur *userRepository) CreateUser() error {
-	fmt.Println("Repository : Creating User...")
+func (ur *userRepository) CreateUser(name string, email string, password_hash string) error {
+	// Step 1 : Prepare the query
+	insertUserQuery :=
+		`INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3)`
+
+	// Step 2 : Execute the query
+	result, err := ur.pool.Exec(context.Background(), insertUserQuery, name, email, password_hash)
+
+	if err != nil {
+		return fmt.Errorf("failed to execute query: %w", err)
+	}
+
+	fmt.Println(result.RowsAffected())
+
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("failed to insert user")
+	}
+
+	// User created succesfully
 	return nil
+}
+
+func (ur *userRepository) GetUserByID(id int) (*models.User, error) {
+	// Step 1 : Prepare the query
+	query :=
+		`SELECT id, name, email FROM users WHERE id = $1`
+
+	// Step 2 : Execute the query
+	row := ur.pool.QueryRow(context.Background(), query, id)
+
+	// Step 3 : Process the result and prepare a desired output
+	var user models.User
+
+	err := row.Scan(&user.ID, &user.Name, &user.Email)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, fmt.Errorf("failed to scan row: %w", err)
+	}
+
+	return &user, nil
 }
