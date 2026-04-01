@@ -31,12 +31,7 @@ func (app *Application) Run() error {
 		return err
 	}
 
-	// Create necessary tables
-	err = db.CreateTables(pool)
-	if err != nil {
-		fmt.Println("Error creating tables: ", err)
-		return err
-	}
+	// Create necessary tables -> Not needed since i moved to migrations
 
 	// Repositories
 	userRepository := repositories.NewUserRepository(pool)

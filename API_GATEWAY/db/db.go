@@ -35,18 +35,18 @@ func SetupDB(dbConfig config.DBConfig) (*pgxpool.Pool, error) {
 	return pool, nil
 }
 
-func CreateTables(pool *pgxpool.Pool) error {
-	createTableQuery := `
-	CREATE TABLE IF NOT EXISTS users (
-		id SERIAL PRIMARY KEY,
-		name TEXT NOT NULL,
-		email TEXT UNIQUE NOT NULL,
-		password_hash TEXT NOT NULL,
-		created_at TIMESTAMPTZ DEFAULT NOW()
-	);
-	`
+// func CreateTables(pool *pgxpool.Pool) error {
+// 	createTableQuery := `
+// 	CREATE TABLE IF NOT EXISTS users (
+// 		id SERIAL PRIMARY KEY,
+// 		name TEXT NOT NULL,
+// 		email TEXT UNIQUE NOT NULL,
+// 		password_hash TEXT NOT NULL,
+// 		created_at TIMESTAMPTZ DEFAULT NOW()
+// 	);
+// 	`
 
-	_, err := pool.Exec(context.Background(), createTableQuery)
+// 	_, err := pool.Exec(context.Background(), createTableQuery)
 
-	return err
-}
+// 	return err
+// }
