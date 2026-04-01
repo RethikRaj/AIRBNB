@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/config"
+	"github.com/RethikRaj/AIRBNB/API_GATEWAY/db"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/handlers"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/repositories"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/router"
@@ -22,9 +23,16 @@ func NewApplication(config *config.Config) *Application {
 }
 
 func (app *Application) Run() error {
+	// Setup database connection
+	db, err := db.SetupDB(app.Config.DB)
+
+	if err != nil {
+		fmt.Println("Error setting up database: ", err)
+		return err
+	}
 
 	// Repositories
-	userRepository := repositories.NewUserRepository()
+	userRepository := repositories.NewUserRepository(db)
 
 	// Service
 	userService := services.NewUserService(userRepository)
