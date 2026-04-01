@@ -11,7 +11,7 @@ type UserRepository interface {
 }
 
 type userRepository struct {
-	db *pgxpool.Pool
+	pool *pgxpool.Pool
 }
 
 // To achieve dependency injection , in the below function why do we need to return an interface, when we can also achieve dependency injection by returning *userRepository  ?
@@ -21,9 +21,9 @@ type userRepository struct {
 // If by chance they write : userRepository := NewUserRepository() // Tight Coupling. The caller starts to depend on concrete implementation instead of interface.
 //
 // Therefore , we return an interface
-func NewUserRepository(_db *pgxpool.Pool) UserRepository {
+func NewUserRepository(_pool *pgxpool.Pool) UserRepository {
 	return &userRepository{
-		db: _db,
+		pool: _pool,
 	}
 }
 

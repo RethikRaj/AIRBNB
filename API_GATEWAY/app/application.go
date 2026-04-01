@@ -24,15 +24,22 @@ func NewApplication(config *config.Config) *Application {
 
 func (app *Application) Run() error {
 	// Setup database connection
-	db, err := db.SetupDB(app.Config.DB)
+	pool, err := db.SetupDB(app.Config.DB)
 
 	if err != nil {
 		fmt.Println("Error setting up database: ", err)
 		return err
 	}
 
+	// Create necessary tables
+	err = db.CreateTables(pool)
+	if err != nil {
+		fmt.Println("Error creating tables: ", err)
+		return err
+	}
+
 	// Repositories
-	userRepository := repositories.NewUserRepository(db)
+	userRepository := repositories.NewUserRepository(pool)
 
 	// Service
 	userService := services.NewUserService(userRepository)
