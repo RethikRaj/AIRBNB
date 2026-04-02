@@ -39,3 +39,11 @@ func (uh *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Fetched user :", user)
 	w.Write([]byte("User fetched succesfully"))
 }
+
+func (uh *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
+	signedToken, err := uh.userService.LoginUser()
+	if err != nil {
+		http.Error(w, "Invalid Credentials", http.StatusBadRequest)
+	}
+	w.Write([]byte(signedToken))
+}

@@ -13,6 +13,7 @@ import (
 type UserRepository interface {
 	CreateUser(name string, email string, password_hash string) error
 	GetUserByID(id int) (*models.User, error)
+	GetUserByEmail(email string) (*models.User, error)
 }
 
 type userRepository struct {
@@ -63,6 +64,7 @@ func (ur *userRepository) GetUserByID(id int) (*models.User, error) {
 	row := ur.pool.QueryRow(context.Background(), query, id)
 
 	// Step 3 : Process the result and prepare a desired output
+
 	var user models.User
 
 	err := row.Scan(&user.ID, &user.Name, &user.Email)
@@ -75,4 +77,27 @@ func (ur *userRepository) GetUserByID(id int) (*models.User, error) {
 	}
 
 	return &user, nil
+}
+
+func (ur *userRepository) GetUserByEmail(email string) (*models.User, error) {
+	query :=
+		`SELECT id, name, email, password_hash FROM users WHERE email = $1`
+
+	row := ur.pool.QueryRow(context.Background(), query, email)
+
+	// fmt.Println(row)
+
+	var user models.User
+
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.Password_hash)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, fmt.Errorf("failed to scan row: %w", err)
+	}
+
+	return &user, nil
+
 }

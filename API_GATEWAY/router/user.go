@@ -19,4 +19,5 @@ func (ur *UserRouter) RegisterRoutes(chiRouter chi.Router) {
 	// Register user routes here
 	chiRouter.Post("/signup", ur.userHandler.CreateUser)
 	chiRouter.Get("/{userID}", ur.userHandler.GetUserByID)
+	chiRouter.Post("/signin", ur.userHandler.LoginUser)
 }
