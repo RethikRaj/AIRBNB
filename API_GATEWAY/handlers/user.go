@@ -1,11 +1,14 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/RethikRaj/AIRBNB/API_GATEWAY/dto"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/services"
+	"github.com/RethikRaj/AIRBNB/API_GATEWAY/utils"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -20,8 +23,27 @@ func NewUserHandler(_userService services.UserService) *UserHandler {
 }
 
 func (uh *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	uh.userService.CreateUser()
-	w.Write([]byte("Registered User"))
+	// Step 1 : Decode the JSON input (Deserialization)
+	var createUserRequestPayload dto.CreateUserRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&createUserRequestPayload); err != nil {
+		utils.WriteErrorJsonResponse(w, http.StatusBadRequest, "Error decoding json", err)
+		return
+	}
+
+	// Step 2 : Validation of input
+
+	// Step 3 : Call service layer
+	// Note : Here it is passed by reference so that we don't create unnecessary copies
+	err := uh.userService.CreateUser(&createUserRequestPayload)
+
+	if err != nil {
+		utils.WriteErrorJsonResponse(w, http.StatusInternalServerError, "Create user request failed", err)
+		return
+	}
+
+	// Step 4 : Encode(Serialization) and write JSON response
+	utils.WriteSuccessJsonResponse(w, http.StatusOK, "User created succesfully", nil)
 }
 
 func (uh *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {

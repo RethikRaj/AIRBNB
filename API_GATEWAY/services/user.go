@@ -3,13 +3,14 @@ package services
 import (
 	"fmt"
 
+	"github.com/RethikRaj/AIRBNB/API_GATEWAY/dto"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/models"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/repositories"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/utils"
 )
 
 type UserService interface {
-	CreateUser() error
+	CreateUser(createUserRequestPayload *dto.CreateUserRequest) error
 	GetUserByID(id int) (*models.User, error)
 	LoginUser() (string, error)
 }
@@ -24,22 +25,22 @@ func NewUserService(_userRepository repositories.UserRepository) UserService {
 	}
 }
 
-func (us *userService) CreateUser() error {
-	name := "test_user"
-	email := "test_user@gmail.com"
-	password := "123456789"
-
-	// TODO: Step 1 :  Validate input
-
-	// Step 2 : Hash the password
-	password_hash, err := utils.HashPassword(password)
-	fmt.Println(password_hash)
+func (us *userService) CreateUser(createUserRequestPayload *dto.CreateUserRequest) error {
+	// Step 0 : Validation done in middlewares
+	// Step 1 : Hash the password
+	password_hash, err := utils.HashPassword(createUserRequestPayload.Password)
 
 	if err != nil {
 		return fmt.Errorf("Error while hashing the password : %w", err)
 	}
 
-	us.userRepository.CreateUser(name, email, password_hash)
+	// Step 2 : Call repository layer to create user
+	err = us.userRepository.CreateUser(createUserRequestPayload.Name, createUserRequestPayload.Email, password_hash)
+
+	if err != nil {
+		return fmt.Errorf("Failed to create user : %w", err)
+	}
+
 	return nil
 }
 
