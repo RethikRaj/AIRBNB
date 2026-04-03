@@ -32,6 +32,10 @@ func (uh *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Step 2 : Validation of input
+	if err := utils.Validate.Struct(&createUserRequestPayload); err != nil {
+		utils.WriteErrorJsonResponse(w, http.StatusBadRequest, "Invalid JSON", err)
+		return
+	}
 
 	// Step 3 : Call service layer
 	// Note : Here it is passed by reference so that we don't create unnecessary copies
