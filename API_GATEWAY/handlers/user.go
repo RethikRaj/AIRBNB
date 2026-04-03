@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -26,7 +25,7 @@ func (uh *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Step 1 : Decode the JSON input (Deserialization)
 	var createUserRequestPayload dto.CreateUserRequest
 
-	if err := json.NewDecoder(r.Body).Decode(&createUserRequestPayload); err != nil {
+	if err := utils.ReadJsonBody(r, &createUserRequestPayload); err != nil {
 		utils.WriteErrorJsonResponse(w, http.StatusBadRequest, "Error decoding json", err)
 		return
 	}

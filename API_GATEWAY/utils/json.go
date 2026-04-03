@@ -41,3 +41,9 @@ func WriteErrorJsonResponse(w http.ResponseWriter, statusCode int, message strin
 
 	return writeJsonResponse(w, &errorResp)
 }
+
+func ReadJsonBody(r *http.Request, result any) error {
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	return decoder.Decode(result)
+}
