@@ -22,23 +22,10 @@ func NewUserHandler(_userService services.UserService) *UserHandler {
 }
 
 func (uh *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	// Step 1 : Decode the JSON input (Deserialization)
-	var createUserRequestPayload dto.CreateUserRequest
-
-	if err := utils.ReadJsonBody(r, &createUserRequestPayload); err != nil {
-		utils.WriteErrorJsonResponse(w, http.StatusBadRequest, "Error decoding json", err)
-		return
-	}
-
-	// Step 2 : Validation of input
-	if err := utils.Validate.Struct(&createUserRequestPayload); err != nil {
-		utils.WriteErrorJsonResponse(w, http.StatusBadRequest, "Invalid JSON", err)
-		return
-	}
+	// Step 1, 2 : Decode the JSON input (Deserialization) , Validation of input : Done by middleware
 
 	// Step 3 : Call service layer
-	// Note : Here it is passed by reference so that we don't create unnecessary copies
-	err := uh.userService.CreateUser(&createUserRequestPayload)
+	err := uh.userService.CreateUser(r.Context().Value("createUserRequestPayload").(*dto.CreateUserRequest))
 
 	if err != nil {
 		utils.WriteErrorJsonResponse(w, http.StatusInternalServerError, "Create user request failed", err)
