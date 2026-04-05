@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/RethikRaj/AIRBNB/API_GATEWAY/contextkeys"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/dto"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/utils"
 )
@@ -26,7 +27,10 @@ func ReadAndValidateCreateUserRequest(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "createUserRequestPayload", &createUserRequestPayload)
+		// The below line can cause collision if same key is used again
+		// ctx := context.WithValue(r.Context(), "createUserRequestPayload", &createUserRequestPayload)
+
+		ctx := context.WithValue(r.Context(), contextkeys.CreateUserPayload, &createUserRequestPayload)
 
 		// 2. Call next
 		next.ServeHTTP(w, r.WithContext(ctx))

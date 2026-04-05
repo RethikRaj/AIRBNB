@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/RethikRaj/AIRBNB/API_GATEWAY/contextkeys"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/dto"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/services"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/utils"
@@ -25,7 +27,17 @@ func (uh *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Step 1, 2 : Decode the JSON input (Deserialization) , Validation of input : Done by middleware
 
 	// Step 3 : Call service layer
-	err := uh.userService.CreateUser(r.Context().Value("createUserRequestPayload").(*dto.CreateUserRequest))
+	// The below line is dangerous as it can panic if the assertion fails
+	// err := uh.userService.CreateUser(r.Context().Value(contextkeys.CreateUserPayload).(*dto.CreateUserRequest))
+
+	// 3.1) Safe assertion
+	payload, ok := r.Context().Value(contextkeys.CreateUserPayload).(*dto.CreateUserRequest)
+	if !ok || payload == nil {
+		utils.WriteErrorJsonResponse(w, http.StatusBadRequest, "Invalid payload for create user", errors.New("Invalid Payload"))
+	}
+
+	// 3.2) Call service layer
+	err := uh.userService.CreateUser(payload)
 
 	if err != nil {
 		utils.WriteErrorJsonResponse(w, http.StatusInternalServerError, "Create user request failed", err)
