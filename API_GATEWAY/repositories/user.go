@@ -93,9 +93,9 @@ func (ur *userRepository) GetUserByEmail(email string) (*models.User, error) {
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("user not found")
+			return nil, err
 		}
-		return nil, fmt.Errorf("failed to scan row: %w", err)
+		return nil, err
 	}
 
 	return &user, nil

@@ -34,6 +34,7 @@ func (uh *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	payload, ok := r.Context().Value(contextkeys.CreateUserPayload).(*dto.CreateUserRequest)
 	if !ok || payload == nil {
 		utils.WriteErrorJsonResponse(w, http.StatusBadRequest, "Invalid payload for create user", errors.New("Invalid Payload"))
+		return
 	}
 
 	// 3.2) Call service layer
@@ -45,7 +46,7 @@ func (uh *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Step 4 : Encode(Serialization) and write JSON response
-	utils.WriteSuccessJsonResponse(w, http.StatusOK, "User created succesfully", nil)
+	utils.WriteSuccessJsonResponse(w, http.StatusCreated, "User created succesfully", nil)
 }
 
 func (uh *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
@@ -65,9 +66,26 @@ func (uh *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uh *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
-	signedToken, err := uh.userService.LoginUser()
-	if err != nil {
-		http.Error(w, "Invalid Credentials", http.StatusBadRequest)
+	// Read payload from context
+	payload, ok := r.Context().Value(contextkeys.SignInUserPayload).(*dto.SignInUserRequest)
+
+	if !ok || payload == nil {
+		utils.WriteErrorJsonResponse(w, http.StatusBadRequest, "Invalid payload for sign up user", errors.New("Invalid Payload"))
+		return
 	}
-	w.Write([]byte(signedToken))
+
+	signedToken, err := uh.userService.LoginUser(payload)
+	if err != nil {
+		switch {
+		case errors.Is(err, services.ErrNotFound):
+			utils.WriteErrorJsonResponse(w, http.StatusNotFound, "No user found. Please sign up", err)
+		case errors.Is(err, services.ErrInvalidCredentials):
+			utils.WriteErrorJsonResponse(w, http.StatusUnauthorized, "Invalid credentials", err)
+		default:
+			utils.WriteErrorJsonResponse(w, http.StatusInternalServerError, "Internal server error", err)
+		}
+		return
+	}
+
+	utils.WriteSuccessJsonResponse(w, http.StatusOK, "User signed up successfully", signedToken)
 }

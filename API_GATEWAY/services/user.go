@@ -1,18 +1,20 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/dto"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/models"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/repositories"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/utils"
+	"github.com/jackc/pgx/v5"
 )
 
 type UserService interface {
 	CreateUser(createUserRequestPayload *dto.CreateUserRequest) error
 	GetUserByID(id int) (*models.User, error)
-	LoginUser() (string, error)
+	LoginUser(payload *dto.SignInUserRequest) (string, error)
 }
 
 type userService struct {
@@ -49,20 +51,22 @@ func (us *userService) GetUserByID(id int) (*models.User, error) {
 	return user, err
 }
 
-func (us *userService) LoginUser() (string, error) {
-	email := "test_user@gmail.com"
-	password := "1234567891"
+func (us *userService) LoginUser(payload *dto.SignInUserRequest) (string, error) {
 
 	// step 1 : Compare password and hashed Password
-	user, err := us.userRepository.GetUserByEmail(email)
+	user, err := us.userRepository.GetUserByEmail(payload.Email)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", ErrNotFound
+		}
 		return "", err
 	}
-	isPasswordMatch := utils.CompareAndVerifyPassword(user.Password_hash, password)
+
+	isPasswordMatch := utils.CompareAndVerifyPassword(user.Password_hash, payload.Password)
 
 	if !isPasswordMatch {
-		return "", fmt.Errorf("Invalid credentials")
+		return "", ErrInvalidCredentials
 	}
 
 	// Step 2 : Generate token

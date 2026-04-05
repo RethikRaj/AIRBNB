@@ -27,14 +27,37 @@ func ReadAndValidateCreateUserRequest(next http.Handler) http.Handler {
 			return
 		}
 
+		// 3. Add context
 		// The below line can cause collision if same key is used again
 		// ctx := context.WithValue(r.Context(), "createUserRequestPayload", &createUserRequestPayload)
 
 		ctx := context.WithValue(r.Context(), contextkeys.CreateUserPayload, &createUserRequestPayload)
 
-		// 2. Call next
+		// 4. Call next with updated context
 		next.ServeHTTP(w, r.WithContext(ctx))
 
 		fmt.Println("User middleware ended")
+	})
+}
+
+func ReadAndValidateSignInUserRequest(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Step 1 : Deserialization
+		var payload dto.SignInUserRequest
+		if err := utils.ReadJsonBody(r, &payload); err != nil {
+			utils.WriteErrorJsonResponse(w, http.StatusBadRequest, "Invalid JSON body", err)
+			return
+		}
+
+		// Step 2 : Validate
+		if err := utils.Validate.Struct(&payload); err != nil {
+			utils.WriteErrorJsonResponse(w, http.StatusBadRequest, "Invalid credentials", err)
+			return
+		}
+
+		// Step 3 : Add context
+		ctx := context.WithValue(r.Context(), contextkeys.SignInUserPayload, &payload)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
