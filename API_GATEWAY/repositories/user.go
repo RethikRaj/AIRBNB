@@ -2,11 +2,9 @@ package repositories
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/models"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -58,7 +56,7 @@ func (ur *userRepository) CreateUser(name string, email string, password_hash st
 func (ur *userRepository) GetUserByID(id int) (*models.User, error) {
 	// Step 1 : Prepare the query
 	query :=
-		`SELECT id, name, email FROM users WHERE id = $1`
+		`SELECT id, name, email, created_at, updated_at FROM users WHERE id = $1`
 
 	// Step 2 : Execute the query
 	row := ur.pool.QueryRow(context.Background(), query, id)
@@ -67,13 +65,10 @@ func (ur *userRepository) GetUserByID(id int) (*models.User, error) {
 
 	var user models.User
 
-	err := row.Scan(&user.ID, &user.Name, &user.Email)
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.Created_at, &user.Updated_at)
 
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("user not found")
-		}
-		return nil, fmt.Errorf("failed to scan row: %w", err)
+		return nil, err
 	}
 
 	return &user, nil
@@ -92,9 +87,6 @@ func (ur *userRepository) GetUserByEmail(email string) (*models.User, error) {
 	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.Password_hash)
 
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, err
-		}
 		return nil, err
 	}
 

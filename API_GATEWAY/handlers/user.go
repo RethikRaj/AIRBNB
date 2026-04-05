@@ -2,15 +2,12 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/contextkeys"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/dto"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/services"
 	"github.com/RethikRaj/AIRBNB/API_GATEWAY/utils"
-	"github.com/go-chi/chi/v5"
 )
 
 type UserHandler struct {
@@ -50,19 +47,25 @@ func (uh *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uh *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
-	userID := chi.URLParam(r, "userID")
-	id, err := strconv.Atoi(userID)
-	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+
+	userID, ok := r.Context().Value(contextkeys.UserID).(int)
+
+	if !ok {
+		utils.WriteErrorJsonResponse(w, http.StatusBadRequest, "Invalid ID", errors.New("Invalid ID"))
 		return
 	}
-	user, err := uh.userService.GetUserByID(id)
+
+	user, err := uh.userService.GetUserByID(userID)
 	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
+		if errors.Is(err, services.ErrNotFound) {
+			utils.WriteErrorJsonResponse(w, http.StatusNotFound, "User not found", err)
+			return
+		}
+		utils.WriteErrorJsonResponse(w, http.StatusInternalServerError, "Error fetching user", err)
 		return
 	}
-	fmt.Println("Fetched user :", user)
-	w.Write([]byte("User fetched succesfully"))
+
+	utils.WriteSuccessJsonResponse(w, http.StatusOK, "User fetched successfully", user)
 }
 
 func (uh *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {

@@ -26,6 +26,9 @@ func (ur *UserRouter) RegisterRoutes(chiRouter chi.Router) {
 	// Way Two
 	chiRouter.With(middlewares.ReadAndValidateCreateUserRequest).Post("/signup", ur.userHandler.CreateUser)
 
-	chiRouter.Get("/{userID}", ur.userHandler.GetUserByID)
 	chiRouter.With(middlewares.ReadAndValidateSignInUserRequest).Post("/signin", ur.userHandler.LoginUser)
+
+	// ProtectedRoutes
+	chiRouter.With(middlewares.JWTAuthMiddleware).Get("/profile", ur.userHandler.GetUserByID)
+
 }

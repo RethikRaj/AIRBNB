@@ -48,7 +48,15 @@ func (us *userService) CreateUser(createUserRequestPayload *dto.CreateUserReques
 
 func (us *userService) GetUserByID(id int) (*models.User, error) {
 	user, err := us.userRepository.GetUserByID(id)
-	return user, err
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (us *userService) LoginUser(payload *dto.SignInUserRequest) (string, error) {
@@ -70,7 +78,7 @@ func (us *userService) LoginUser(payload *dto.SignInUserRequest) (string, error)
 	}
 
 	// Step 2 : Generate token
-	signedToken, err := utils.CreateJWTToken(user.ID)
+	signedToken, err := utils.CreateJWTToken(user.ID, user.Email)
 
 	if err != nil {
 		return "", err
